@@ -18,35 +18,20 @@ export default class App extends React.Component {
             boring: 'exciting',
             lame: 'cool',
             typical: 'unusual',
+            worst: 'best',
+            hate: 'love',
+            dislike: 'adore',
+            stupid: 'amazing',
+            dumb: 'brilliant',
+            unoriginal: 'unique',
         };
 
         this.onChange = (editorState) => this.setState({ editorState });
 
-        this.onClick = this.onClick.bind(this);
         this.handleBeforeInput = this.handleBeforeInput.bind(this);
     }
 
-    onClick() {
-        const { editorState } = this.state;
-        const currentContent = editorState.getCurrentContent();
-        const blocks = currentContent.getBlocksAsArray();
-        const newBlocks = blocks.map(block => {
-            const curText = block.getText();
-            const words = curText.split(' ');
-            const replacedWords = words.map(word => {
-                return this.substituteWords.hasOwnProperty(word) ? this.substituteWords[word] : word
-            });
-            const replacedText = replacedWords.join(' ');
-            return block.set('text', replacedText);
-        });
-
-        const newContentState = ContentState.createFromBlockArray(newBlocks);
-
-        this.onChange(EditorState.createWithContent(newContentState));
-    }
-
     handleBeforeInput(str) {
-        // @todo handle punctuation
         const endChars = [' ', '.', ',', '!', ';'];
         if (endChars.indexOf(str) === -1) {
             return false;
@@ -70,23 +55,25 @@ export default class App extends React.Component {
                     anchorKey: currentBlock.getKey(),
                     anchorOffset: spaceOffset + 1,
                     focusKey: currentBlock.getKey(),
-                    focusOffset: offset
+                    focusOffset: offset,
                 }),
-                this.substituteWords[word]
+                this.substituteWords[word] + str
             );
-            // const replacementText = text.substr(0, spaceOffset) + ' ' + this.substituteWords[word] + ' ' + text.substr(offset);
-            // console.log(replacementText);
-            // const newBlock = currentBlock.merge({
-            //     text: replacementText,
-            // });
-            // const newContentState = currentContentState.merge({
-            //     blockMap: currentBlockMap.set(key, newBlock),
-            // });
 
             const newState = EditorState.push(editorState, newContentState, 'replace-text');
+
+            const newStateWithFocus = EditorState.forceSelection(
+                newState,
+                new SelectionState({
+                    anchorKey: currentBlock.getKey(),
+                    anchorOffset: spaceOffset + 2 + this.substituteWords[word].length,
+                    focusKey: currentBlock.getKey(),
+                    focusOffset: spaceOffset + 2 + this.substituteWords[word].length,
+                }),
+            );
             console.dir(newState.toJS());
 
-            this.onChange(newState);
+            this.onChange(newStateWithFocus);
             return true;
         }
         return false;
@@ -111,8 +98,7 @@ export default class App extends React.Component {
 
         return (
             <div style={appWrapperStyle}>
-                <h1>Whimsical Editor</h1>
-                <button onClick={this.onClick} style={buttonStyle}>Make it whimsical!</button>
+                <h1>Morale Booster v0.1</h1>
                 <div style={editorWrapperStyle}>
                     <Editor
                         editorState={this.state.editorState}
