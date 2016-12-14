@@ -24,6 +24,7 @@ export default class App extends React.Component {
             stupid: 'amazing',
             dumb: 'brilliant',
             unoriginal: 'unique',
+            [':('] : ':)'
         };
 
         this.onChange = (editorState) => this.setState({ editorState });
@@ -41,7 +42,6 @@ export default class App extends React.Component {
         const key = selectionState.getStartKey();
         const currentContentState = editorState.getCurrentContent();
         const currentBlock = currentContentState.getBlockForKey(selectionState.getStartKey());
-        const currentBlockMap = currentContentState.getBlockMap();
         const offset = selectionState.focusOffset;
         const text = currentBlock.getText();
         const textToOffset = text.substr(0, offset);
@@ -52,9 +52,9 @@ export default class App extends React.Component {
             const newContentState = Modifier.replaceText(
                 editorState.getCurrentContent(),
                 new SelectionState({
-                    anchorKey: currentBlock.getKey(),
+                    anchorKey: key,
                     anchorOffset: spaceOffset + 1,
-                    focusKey: currentBlock.getKey(),
+                    focusKey: key,
                     focusOffset: offset,
                 }),
                 this.substituteWords[word] + str
@@ -80,12 +80,6 @@ export default class App extends React.Component {
     }
 
     render() {
-        const buttonStyle = {
-            padding: 15,
-            margin: '15px auto',
-            border: '2px solid black',
-        };
-
         const appWrapperStyle = {
             width: 800,
             margin: '20px auto',
