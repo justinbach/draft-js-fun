@@ -5,6 +5,15 @@ import { Editor, EditorState, ContentState, SelectionState, Modifier, createDeco
 
 require('draft-js/dist/Draft.css');
 
+const isWordEndingChar = char => [' ', '.', ',', '!', ';'].indexOf(char) !== -1;
+
+const getCompletedWord = (block, offset) => {
+    const text = block.getText();
+    const textToOffset = text.substr(0, offset);
+    const spaceOffset = textToOffset.lastIndexOf(' ');
+    return spaceOffset === -1 ? textToOffset : textToOffset.substr(spaceOffset + 1);
+};
+
 export default class App extends React.Component {
 
     constructor(props) {
@@ -31,48 +40,44 @@ export default class App extends React.Component {
         this.handleBeforeInput = this.handleBeforeInput.bind(this);
     }
 
-    handleBeforeInput(str) {
-        const endChars = [' ', '.', ',', '!', ';'];
-        if (endChars.indexOf(str) === -1) {
+    handleBeforeInput(char) {
+        if (!isWordEndingChar(char)) {
             return false;
         }
+
         const { editorState } = this.state;
         const selectionState = editorState.getSelection();
         const key = selectionState.getStartKey();
         const currentContentState = editorState.getCurrentContent();
-        const currentBlock = currentContentState.getBlockForKey(selectionState.getStartKey());
+        const currentBlock = currentContentState.getBlockForKey(key);
         const offset = selectionState.focusOffset;
-        const text = currentBlock.getText();
-        const textToOffset = text.substr(0, offset);
-        const spaceOffset = textToOffset.lastIndexOf(' ');
-        const word = spaceOffset === -1 ? textToOffset : textToOffset.substr(spaceOffset + 1);
+        const word = getCompletedWord(currentBlock, offset);
 
         if (this.substituteWords.hasOwnProperty(word)) {
             const newContentState = Modifier.replaceText(
                 editorState.getCurrentContent(),
                 new SelectionState({
                     anchorKey: key,
-                    anchorOffset: spaceOffset + 1,
+                    anchorOffset: offset - word.length,
                     focusKey: key,
                     focusOffset: offset,
                 }),
-                this.substituteWords[word] + str
+                this.substituteWords[word] + char
             );
+            const stateWithReplacedText = EditorState.push(editorState, newContentState, 'replace-text');
 
-            const newState = EditorState.push(editorState, newContentState, 'replace-text');
-
-            const newStateWithFocus = EditorState.forceSelection(
-                newState,
+            // Calculate the new cursor position, accounting for the newly-entered character
+            const newOffset = offset - word.length + this.substituteWords[word].length + 1;
+            const stateWithCorrectFocus = EditorState.forceSelection(
+                stateWithReplacedText,
                 new SelectionState({
                     anchorKey: currentBlock.getKey(),
-                    anchorOffset: spaceOffset + 2 + this.substituteWords[word].length,
+                    anchorOffset: newOffset,
                     focusKey: currentBlock.getKey(),
-                    focusOffset: spaceOffset + 2 + this.substituteWords[word].length,
+                    focusOffset: newOffset,
                 }),
             );
-            console.dir(newState.toJS());
-
-            this.onChange(newStateWithFocus);
+            this.onChange(stateWithCorrectFocus);
             return true;
         }
         return false;
