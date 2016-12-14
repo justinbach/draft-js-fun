@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Editor, EditorState, ContentState, SelectionState, Modifier, createDecorator } from 'draft-js';
-import Immutable from 'immutable';
 
 require('draft-js/dist/Draft.css');
 
