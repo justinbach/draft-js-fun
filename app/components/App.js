@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react';
-import { Editor, EditorState, ContentState, Modifier, createDecorator } from 'draft-js';
+import { Editor, EditorState, ContentState, SelectionState, Modifier, createDecorator } from 'draft-js';
 import Immutable from 'immutable';
 
 require('draft-js/dist/Draft.css');
@@ -64,27 +64,29 @@ export default class App extends React.Component {
         const word = spaceOffset === -1 ? textToOffset : textToOffset.substr(spaceOffset + 1);
 
         if (this.substituteWords.hasOwnProperty(word)) {
-            const replacementText = text.substr(0, spaceOffset) + ' ' + this.substituteWords[word] + ' ' + text.substr(offset);
-            console.log(replacementText);
-            const newBlock = currentBlock.merge({
-                text: replacementText,
-            });
-            const newContentState = currentContentState.merge({
-                blockMap: currentBlockMap.set(key, newBlock),
-            });
+            const newContentState = Modifier.replaceText(
+                editorState.getCurrentContent(),
+                new SelectionState({
+                    anchorKey: currentBlock.getKey(),
+                    anchorOffset: spaceOffset + 1,
+                    focusKey: currentBlock.getKey(),
+                    focusOffset: offset
+                }),
+                this.substituteWords[word]
+            );
+            // const replacementText = text.substr(0, spaceOffset) + ' ' + this.substituteWords[word] + ' ' + text.substr(offset);
+            // console.log(replacementText);
+            // const newBlock = currentBlock.merge({
+            //     text: replacementText,
+            // });
+            // const newContentState = currentContentState.merge({
+            //     blockMap: currentBlockMap.set(key, newBlock),
+            // });
 
-            const newState = EditorState.push(editorState, newContentState, 'change-block-data');
-            // const newState = EditorState.createWithContent(newContentState);
-            // const newStateWithSelection = EditorState.forceSelection(
-            //     newState,
-            //     selectionState.merge({
-            //         focusOffset: selectionState.focusOffset + 10,
-            //     })
-            // );
+            const newState = EditorState.push(editorState, newContentState, 'replace-text');
             console.dir(newState.toJS());
 
             this.onChange(newState);
-            this.forceUpdate();
             return true;
         }
         return false;
