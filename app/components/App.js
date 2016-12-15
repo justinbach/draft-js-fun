@@ -106,6 +106,8 @@ export default class App extends React.Component {
             stupid: 'amazing',
             dumb: 'brilliant',
             unoriginal: 'unique',
+            terrible: 'incredible',
+            waste: 'wisely spend',
             [':(']: ':)'
         };
 
@@ -128,11 +130,36 @@ export default class App extends React.Component {
     handleImageBlock() {
         const { editorState } = this.state;
 
-        const selectionState = editorState.getSelection();
+        // if the current block is the first block, split it (so the first block is always unstyled)
+        const editorStateToBeTurnedIntoImage = (() => {
+            const currentContent = editorState.getCurrentContent();
+            const selectionState = editorState.getSelection();
+            const currentKey = selectionState.getAnchorKey();
+            if (!currentContent.getKeyBefore(currentKey)) {
+                const selectionState = editorState.getSelection();
+                const currentKey = selectionState.getAnchorKey();
+                const editorStateSplit = EditorState.push(
+                    editorState, Modifier.splitBlock(currentContent, selectionState), 'split-block');
+                const contentSplit = editorStateSplit.getCurrentContent();
+                const nextKey = contentSplit.getKeyAfter(currentKey);
+                return EditorState.forceSelection(editorStateSplit,
+                    new SelectionState({
+                        anchorKey: nextKey,
+                        anchorOffset: 0,
+                        focusKey: nextKey,
+                        focusOffset: 0,
+                    })
+                );
+            } else {
+                return editorState;
+            }
+        })();
+
+        const selectionState = editorStateToBeTurnedIntoImage.getSelection();
         const currentKey = selectionState.getAnchorKey();
 
         // turn the current block into an image
-        const editorStateWithImageBlock = resetBlockType(editorState, currentKey, IMAGE_BLOCK);
+        const editorStateWithImageBlock = resetBlockType(editorStateToBeTurnedIntoImage, currentKey, IMAGE_BLOCK);
 
         // split the image block in two
         const contentState = editorStateWithImageBlock.getCurrentContent();
@@ -203,8 +230,10 @@ export default class App extends React.Component {
         };
         const editorWrapperStyle = {
             width: 600,
-            minHeight: 400,
+            minHeight: 500,
             border: '1px solid gray',
+            fontSize: 24,
+            color: '#444',
         };
 
         return (
