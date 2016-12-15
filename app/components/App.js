@@ -19,7 +19,13 @@ require('draft-js/dist/Draft.css');
 
 const isWordEndingChar = char => [' ', '.', ',', '!', ';'].indexOf(char) !== -1;
 
-const isImageEndingChar = char => char === '%';
+const shouldTriggerImage = (char, editorState) => {
+    const currentContent = editorState.getCurrentContent();
+    const currentSelection = editorState.getSelection();
+    const currentBlock = currentContent.getBlockForKey(currentSelection.anchorKey);
+    const stringToMatch = currentBlock.getText().substring(currentSelection.anchorOffset - ('this is np'.length), currentSelection.anchorOffset) + char;
+    return stringToMatch.search(/this is npr/i) !== -1;
+};
 
 const getCompletedWord = (block, offset) => {
     const text = block.getText();
@@ -58,13 +64,8 @@ const resetBlockType = (editorState, key, newType = 'unstyled') => {
     const contentState = editorState.getCurrentContent();
     const blockMap = contentState.getBlockMap();
     const block = blockMap.get(key);
-    let newText = '';
-    const text = block.getText();
-    if (block.getLength() >= 2) {
-        newText = text.substr(1);
-    }
     const newBlock = block.merge({
-        text: newText,
+        text: '',
         type: newType,
         data: getDefaultBlockData(newType),
     });
@@ -97,8 +98,8 @@ export default class App extends React.Component {
         this.blockRendererFn = getBlockRendererFn(this.getEditorState, this.onChange);
 
         this.substituteWords = {
-            boring: 'exciting',
             lame: 'cool',
+            boring: 'exciting',
             typical: 'unusual',
             worst: 'best',
             hate: 'love',
@@ -120,8 +121,7 @@ export default class App extends React.Component {
         if (isWordEndingChar(char)) {
             return this.handleWordSubstitution(char);
         }
-        if (isImageEndingChar(char)) {
-            console.log('image!');
+        if (shouldTriggerImage(char, this.state.editorState)) {
             return this.handleImageBlock();
         }
         return false;
