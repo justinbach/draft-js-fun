@@ -11,10 +11,10 @@ import 'draft-js/dist/Draft.css';
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css'; // eslint-disable-line import/no-unresolved
 
 import createMoraleBoosterPlugin from '../plugins/MoraleBooster';
-import createThisIsNPRPlugin from '../plugins/ThisIsNPR';
+import createStopDoingThatPlugin from '../plugins/StopDoingThat';
 
 const moraleBoosterPlugin = createMoraleBoosterPlugin();
-const thisIsNPRPlugin = createThisIsNPRPlugin();
+const stopDoingThatPlugin = createStopDoingThatPlugin();
 
 const inlineToolbarPlugin = createInlineToolbarPlugin();
 const { InlineToolbar } = inlineToolbarPlugin;
@@ -45,7 +45,7 @@ export default class App extends React.Component {
 
         return (
             <div style={appWrapperStyle}>
-                <h1>Morale Booster v0.1</h1>
+                <h1>Mega-happy text editor v0.1</h1>
                 <div style={editorWrapperStyle}>
                     <Editor
                         editorState={this.state.editorState}
@@ -53,7 +53,7 @@ export default class App extends React.Component {
                         plugins={[
                             inlineToolbarPlugin,
                             moraleBoosterPlugin,
-                            thisIsNPRPlugin,
+                            stopDoingThatPlugin,
                         ]}
                     />
                 </div>

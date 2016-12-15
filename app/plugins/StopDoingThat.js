@@ -45,8 +45,8 @@ export default function createThisIsNPRPlugin() {
         const currentContent = editorState.getCurrentContent();
         const currentSelection = editorState.getSelection();
         const currentBlock = currentContent.getBlockForKey(currentSelection.anchorKey);
-        const stringToMatch = currentBlock.getText().substring(currentSelection.anchorOffset - ('this is np'.length), currentSelection.anchorOffset) + char;
-        return stringToMatch.search(/this is npr/i) !== -1;
+        const stringToMatch = currentBlock.getText().substring(currentSelection.anchorOffset - ('stop doing tha'.length), currentSelection.anchorOffset) + char;
+        return stringToMatch.search(/stop doing that/i) !== -1;
     };
 
     const handleImageBlock = (getEditorState, setEditorState) => {

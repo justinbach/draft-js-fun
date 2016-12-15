@@ -4,7 +4,7 @@ export default class ImageBlock extends React.Component {
     render() {
         const data = this.props.block.getData();
         // const url = data.get('url');
-        const url = 'http://dev-jbachorik.npr.org/npr.jpg';
+        const url = 'http://dev-jbachorik.npr.org/awesome.png';
         return (
             <div className='image-wrap'>
                 <img src={url} />
