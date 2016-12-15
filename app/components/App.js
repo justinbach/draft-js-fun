@@ -225,7 +225,7 @@ export default class App extends React.Component {
 
     render() {
         const appWrapperStyle = {
-            width: 800,
+            width: 600,
             margin: '20px auto',
         };
         const editorWrapperStyle = {
